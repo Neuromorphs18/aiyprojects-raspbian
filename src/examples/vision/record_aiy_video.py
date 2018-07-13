@@ -63,7 +63,7 @@ def main():
                 pass
         except KeyboardInterrupt:
             camera.stop_recording()
-            print("Stopped AIY recording.")
+            # print("Stopped AIY recording.")
 
 
 if __name__ == '__main__':
