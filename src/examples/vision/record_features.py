@@ -76,7 +76,6 @@ def main():
         '--resolution',
         '-r',
         type=int,
-        #required=True,
         nargs='+',
         dest='resolution',
         help='Sets the resolution.')
@@ -102,7 +101,6 @@ def main():
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
     print("Saving features to {}.".format(args.save_dir))
-    print("Stop with Ctrl+C.")
 
     with PiCamera() as camera:
         camera.sensor_mode = args.sensor_mode
@@ -134,7 +132,7 @@ def main():
                         feature_list = []
         except KeyboardInterrupt:
             camera.stop_recording()
-            print("Stopped recording.")
+            # print("Stopped recording.")
 
 
 if __name__ == '__main__':
