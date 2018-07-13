@@ -13,8 +13,8 @@
 # limitations under the License.
 """API for Image Classification tasks."""
 
-from aiy.vision.inference import ModelDescriptor
-from aiy.vision.models import utils
+from src.aiy.vision.inference import ModelDescriptor
+from src.aiy.vision.models import utils
 
 # There are two models in our repository that can do image classification. One
 # based on MobileNet model structure, the other based on SqueezeNet model

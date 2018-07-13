@@ -24,7 +24,7 @@ import argparse
 
 import os
 import numpy as np
-from aiy.vision.inference import CameraInference
+from src.aiy.vision.inference import CameraInference
 from src.aiy.vision.models import feature_extraction
 from picamera import PiCamera
 
@@ -53,7 +53,8 @@ def main():
         '-s',
         type=int,
         dest='fps',
-        help='Sets the number of feature vectors which are bundled for saving.')
+        help='Sets the number of feature vectors which are bundled for '
+             'saving.')
 
     parser.add_argument(
         '--save_dir',
@@ -96,10 +97,12 @@ def main():
             for i, result in enumerate(inference.run()):
                 if i == args.num_frames:
                     break
-                feature_list.append(feature_extraction.get_output_features(result))
+                feature_list.append(feature_extraction.get_output_features(
+                    result))
                 if i % args.fps == 0:
                     print("Saved {} features".format(i))
-                    np.save(os.path.join(args.save_dir, str(i)), np.concatenate(feature_list))
+                    np.save(os.path.join(args.save_dir, str(i)),
+                            np.concatenate(feature_list))
                     feature_list = []
 
         camera.stop_preview()
