@@ -2,7 +2,6 @@ import os
 import time
 import argparse
 import picamera
-from aiy.vision.leds import Leds, PrivacyLed, RgbLeds
 
 
 def main():
@@ -51,24 +50,20 @@ def main():
         os.makedirs(args.save_dir)
     print("Saving aiy frames to {}.".format(args.save_dir))
 
-    on_led = Leds()
-
-    with picamera.PiCamera() as camera, \
-            PrivacyLed(on_led), RgbLeds(on_led, Leds.rgb_on((255, 0, 0))):
+    with picamera.PiCamera() as camera:
         camera.sensor_mode = args.sensor_mode
         camera.resolution = args.resolution
         camera.framerate = args.frame_rate
         path = os.path.join(args.save_dir, 'aiyOut-' +
                             time.strftime("%Y_%m_%d_%H_%M_%S") + '.h264')
-        print("Starting AIY recording.")
+        # print("Starting AIY recording.")
         camera.start_recording(path)
         try:
             while True:
                 pass
         except KeyboardInterrupt:
-            pass
-        camera.stop_recording()
-        print("Stopped AIY recording.")
+            camera.stop_recording()
+            print("Stopped AIY recording.")
 
 
 if __name__ == '__main__':
