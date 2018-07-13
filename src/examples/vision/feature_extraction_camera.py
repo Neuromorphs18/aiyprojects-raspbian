@@ -21,7 +21,7 @@ Example:
 image_classification_camera.py --num_frames 10
 """
 import argparse
-
+import time
 import os
 import numpy as np
 from src.aiy.vision.inference import CameraInference
@@ -52,7 +52,7 @@ def main():
         '--save_frequency',
         '-s',
         type=int,
-        dest='fps',
+        dest='save_frequency',
         help='Sets the number of feature vectors which are bundled for '
              'saving.')
 
@@ -61,51 +61,80 @@ def main():
         '-d',
         type=str,
         dest='save_dir',
-        default=os.path.join('/', 'home', 'pi', 'Data', 'features'),
+        default=os.path.join('/', 'home', 'pi', 'Data_pi', 'features'),
         help='Sets the path where the features will be stored.')
 
+    parser.add_argument(
+        '--frame_rate',
+        '-f',
+        type=int,
+        dest='frame_rate',
+        default=30,
+        help='Sets the frame rate.')
+
+    parser.add_argument(
+        '--resolution',
+        '-r',
+        type=int,
+        #required=True,
+        nargs='+',
+        dest='resolution',
+        help='Sets the resolution.')
+
+    parser.add_argument(
+        '--sensor_mode',
+        '-m',
+        type=int,
+        dest='sensor_mode',
+        default=4,
+        help='Sets the sensor mode. For details see '
+             'https://picamera.readthedocs.io/en/release-1.13/fov.html'
+             '#sensor-modes')
+
     args = parser.parse_args()
+
+    if args.resolution is None:
+        args.resolution = (1640, 1232)
+
+    if args.save_frequency is None:
+        args.save_frequency = args.frame_rate
 
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
     print("Saving features to {}.".format(args.save_dir))
-    if len(os.listdir(args.save_dir)) != 0:
-        print("WARNING: Directory not empty.")
+    print("Stop with Ctrl+C.")
 
     with PiCamera() as camera:
-        # Forced sensor mode, 1640x1232, full FoV. See:
-        # https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
-        # This is the resolution inference run on.
-        camera.sensor_mode = 4
+        camera.sensor_mode = args.sensor_mode
 
-        # Scaled and cropped resolution. If different from sensor mode implied
-        # resolution, inference results must be adjusted accordingly. This is
-        # true in particular when camera.start_recording is used to record an
-        # encoded h264 video stream as the Pi encoder can't encode all native
-        # sensor resolutions, or a standard one like 1080p may be desired.
-        camera.resolution = (1640, 1232)
+        camera.resolution = args.resolution
+
+        camera.framerate = args.frame_rate
+
+        ts = time.strftime("%Y_%m_%d_%H_%M_%S")
+        path_frames = os.path.join(args.save_dir, ts + '.h264')
+        path_features = os.path.join(args.save_dir, ts)
+        os.makedirs(path_features)
 
         # Start the camera stream.
-        camera.framerate = 30
-        camera.start_preview()
+        camera.start_recording(path_frames)
 
-        if args.fps is None:
-            args.fps = camera.framerate
-
-        with CameraInference(feature_extraction.model()) as inference:
-            feature_list = []
-            for i, result in enumerate(inference.run()):
-                if i == args.num_frames:
-                    break
-                feature_list.append(feature_extraction.get_output_features(
-                    result))
-                if i % args.fps == 0:
-                    print("Saved {} features".format(i))
-                    np.save(os.path.join(args.save_dir, str(i)),
-                            np.concatenate(feature_list))
-                    feature_list = []
-
-        camera.stop_preview()
+        try:
+            with CameraInference(feature_extraction.model()) as inference:
+                feature_list = []
+                for i, result in enumerate(inference.run()):
+                    if i == args.num_frames:
+                        break
+                    feature_list.append(feature_extraction.get_output_features(
+                        result))
+                    if i % args.save_frequency == 0:
+                        print("Saved {} features".format(i))
+                        np.save(os.path.join(path_features, str(i)),
+                                np.concatenate(feature_list))
+                        feature_list = []
+        except KeyboardInterrupt:
+            camera.stop_recording()
+            print("Stopped recording.")
 
 
 if __name__ == '__main__':
