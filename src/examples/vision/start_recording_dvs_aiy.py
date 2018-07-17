@@ -5,11 +5,14 @@ import signal
 import RPi.GPIO as GPIO
 from aiy.vision.leds import Leds, RgbLeds
 
+# SET THE COMMANDLINE OPTIONS (PATH, RESOLOLUTION, ...) APPROPRIATELY!
 aiy_command = 'python3 /home/pi/Repositories/aiyprojects-raspbian/src/' \
-               'examples/vision/record_aiy_video.py  --resolution 240 180'
-dvs_command = 'caer-bin -c /home/pi/Repositories/caer/docs/' \
-               'davis-record-file_custom.xml -o /outFile/ directory string '\
-               '/home/pi/Data_pi/davis/ &'
+    'examples/vision/record_aiy_video.py ' \
+    '-d /home/pi/Data_pi/aiy_frames/ --resolution 1640 922 --frame_rate 25 ' \
+    '--sensor_mode 5'
+dvs_command = 'caer-bin -c /home/pi/Repositories/aiyprojects-raspbian/src/' \
+    'examples/vision/davis-record-file.xml -o /outFile/ ' \
+    'directory string /home/pi/Data_pi/davis/ &'
 
 GPIO.setmode(GPIO.BCM)
 GPIO_switch = 23
@@ -31,10 +34,11 @@ try:
     p1 = p2 = None
     while True:
         if GPIO.input(GPIO_switch) == 0 and run == 0:
+            print("Started recording at time {}.".format(
+                time.strftime("%Y_%m_%d_%H_%M_%S")))
             p1 = subprocess.Popen(aiy_command, shell=True,
                                   preexec_fn=os.setsid)
             led_red.__enter__()
-            print("Started recording.")
             p2 = subprocess.Popen(dvs_command, shell=True,
                                   preexec_fn=os.setsid)
             run = 1
