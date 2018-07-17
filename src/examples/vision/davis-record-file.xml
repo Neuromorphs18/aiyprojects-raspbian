@@ -9,7 +9,7 @@
                 <attr key="modulesSearchPath" type="string">/usr/share/caer/modules/</attr>
             </node>
             <node name="server" path="/caer/server/">
-                <attr key="ipAddress" type="string">127.0.0.1</attr>
+                <attr key="ipAddress" type="string">0.0.0.0</attr>
                 <attr key="portNumber" type="int">4040</attr>
             </node>
         </node>
