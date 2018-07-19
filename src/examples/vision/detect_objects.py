@@ -25,6 +25,8 @@ import time
 import os
 import numpy as np
 import keras
+import paramiko
+import sshconfig as cfg
 
 from numpy.linalg import norm
 from aiy.vision.inference import CameraInference
@@ -64,7 +66,7 @@ def main():
         '-f',
         type=int,
         dest='frame_rate',
-        default=5,  # this has been changed
+        default=10,  # this has been changed
         help='Sets the frame rate.')
 
     parser.add_argument(
@@ -92,11 +94,19 @@ def main():
 
     if args.save_frequency is None:
         args.save_frequency = args.frame_rate
-    
+   
+    # import keras stuff
     data_path = '/home/pi/Desktop/'
     network = keras.models.load_model(data_path + 'model.h5')
     labels = np.load(data_path + 'train_5w_w2v_embeddings.npz')
 
+    # ssh stuff
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh.connect(cfg.host, username=cfg.username, password=cfg.password)
+    except:
+        print("Won't be speaking")
 
     with PiCamera() as camera:
         camera.sensor_mode = args.sensor_mode
@@ -117,16 +127,23 @@ def main():
                         fts = np.array(feature_list)
                         fts = fts / norm(fts, axis=1)[:, None]
                         vec_pred = network.predict(fts)
-
+                        
+                        pred_wrd = []
                         for vec in vec_pred:
                             lab_idx = np.argmin(
                                     norm(vec - labels['embeddings'], axis=1))
-                            print(labels['words'][lab_idx])
+                            word = labels['words'][lab_idx]
+                            pred_wrd.append(word)
+                        words, counts = np.unique(pred_wrd,
+                                return_counts=True)
+                        max_word = words[np.argmax(counts)]
+                        print(max_word)
+                        _, _, _ = ssh.exec_command(
+                                'python3 speak.py {}'.format(max_word))
 
-                        #pred_labels = predict_labels_from_fts(fts)
-                        #print("I see".format(i))
                         feature_list = []
         except KeyboardInterrupt:
+            ssh.close()
             camera.stop_preview()
 
 if __name__ == '__main__':
