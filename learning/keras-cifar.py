@@ -56,7 +56,7 @@ vis_fts = norm_mat(vis_fts)
 
 
 X_vis = vis_fts #project_data(vis_fts, d) # currently: Re-LU
-X_wrd = vis_fts # project_data(wrd_fts, d)
+X_wrd = wrd_fts # project_data(wrd_fts, d)
 
 # map from labels to vectors
 Y_vis = vec_from_labels(X_vis, vis_lab, X_wrd)

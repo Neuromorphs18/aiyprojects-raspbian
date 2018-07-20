@@ -8,8 +8,8 @@ from aiy.vision.leds import Leds, RgbLeds
 # SET THE COMMANDLINE OPTIONS (PATH, RESOLOLUTION, ...) APPROPRIATELY!
 aiy_command = 'python3 /home/pi/Repositories/aiyprojects-raspbian/src/' \
     'examples/vision/record_aiy_video.py ' \
-    '-d /home/pi/Data_pi/aiy_frames/ --resolution 1640 922 --frame_rate 25 ' \
-    '--sensor_mode 5'
+    '-d /home/pi/Data_pi/aiy_frames/ --resolution 640 480 --frame_rate 5 ' \
+    '--sensor_mode 7 --save_format .h264'
 dvs_command = 'caer-bin -c /home/pi/Repositories/aiyprojects-raspbian/src/' \
     'examples/vision/davis-record-file.xml -o /outFile/ ' \
     'directory string /home/pi/Data_pi/davis/ &'

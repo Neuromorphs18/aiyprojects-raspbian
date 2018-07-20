@@ -44,6 +44,14 @@ def main():
              'https://picamera.readthedocs.io/en/release-1.13/fov.html'
              '#sensor-modes')
 
+    parser.add_argument(
+        '--save_format',
+        '-s',
+        type=str,
+        dest='save_format',
+        default='.h264',
+        help='Sets the path where the features will be stored.')
+
     args = parser.parse_args()
 
     if not os.path.exists(args.save_dir):
@@ -55,7 +63,8 @@ def main():
         camera.resolution = args.resolution
         camera.framerate = args.frame_rate
         path = os.path.join(args.save_dir, 'aiyOut-' +
-                            time.strftime("%Y_%m_%d_%H_%M_%S") + '.h264')
+                            time.strftime("%Y_%m_%d_%H_%M_%S") +
+                            args.save_format)
         # print("Starting AIY recording.")
         camera.start_recording(path)
         try:
